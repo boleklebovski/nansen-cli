@@ -12,6 +12,7 @@ import { buildAgentCommands } from './commands/agent.js';
 import { buildResearchCommands, RESEARCH_HISTORICAL_SUBCOMMANDS } from './commands/research.js';
 import { resolveAddress, isEnsName } from './ens.js';
 import fs from 'fs';
+import path from 'path';
 import { getUpdateNotification, getUpgradeNotice, scheduleUpdateCheck } from './update-check.js';
 import { refreshCostMapIfStale, getCostForEndpoint } from './cost-cache.js';
 import { trackCommandSucceeded, trackCommandFailed } from './telemetry.js';
@@ -1153,6 +1154,9 @@ export function buildCommands(deps = {}) {
           if (options.addresses) {
             addresses = parseAddressList(options.addresses);
           } else if (options.file) {
+            if (options.file.includes('..') || path.isAbsolute(options.file)) {
+              throw new NansenError('Invalid file path', ErrorCode.INVALID_PARAMS);
+            }
             const content = fs.readFileSync(options.file, 'utf8');
             try {
               const parsed = JSON.parse(content);
